@@ -5,7 +5,7 @@ import storeConfig from '../../config/store'
 const fmt = (n) => '$' + n.toLocaleString('es-AR')
 
 export default function CartPage() {
-  const { items, removeItem, totalPrice, clearCart } = useCart()
+  const { items, removeItem, totalPrice } = useCart()
   const [payMethod, setPayMethod] = useState('efectivo')
   const [name, setName] = useState('')
   const [address, setAddress] = useState('')
@@ -14,22 +14,29 @@ export default function CartPage() {
     if (!name.trim()) return alert('Por favor ingresá tu nombre.')
     if (items.length === 0) return alert('Tu carrito está vacío.')
 
-    let msg = `🍔 *Nuevo pedido - ${storeConfig.name}*\n\n`
-    msg += `👤 *Cliente:* ${name.trim()}\n`
-    if (address.trim()) msg += `📍 *Dirección:* ${address.trim()}\n`
-    msg += `\n*Productos:*\n`
+    const separator = '----------------------------'
+
+    let msg = `*NUEVO PEDIDO - ${storeConfig.name.toUpperCase()}*\n`
+    msg += `${separator}\n`
+    msg += `*Cliente:* ${name.trim()}\n`
+    if (address.trim()) msg += `*Direccion:* ${address.trim()}\n`
+    msg += `${separator}\n`
+    msg += `*PRODUCTOS:*\n`
     items.forEach(item => {
-      msg += `• ${item.qty}x ${item.product.name} — ${fmt(item.total)}\n`
+      msg += `  ${item.qty}x ${item.product.name} - ${fmt(item.total)}\n`
       if (item.additionals.length > 0)
-        msg += `  _+ ${item.additionals.map(a => a.name).join(', ')}_\n`
+        msg += `  + ${item.additionals.map(a => a.name).join(', ')}\n`
     })
-    msg += `\n💰 *Total: ${fmt(totalPrice)}*\n`
+    msg += `${separator}\n`
+    msg += `*TOTAL: ${fmt(totalPrice)}*\n`
+    msg += `${separator}\n`
     if (payMethod === 'transferencia') {
-      msg += `\n💳 *Pago:* Transferencia\n`
+      msg += `*Pago:* Transferencia\n`
       msg += `CBU: ${storeConfig.payment.cbu}\n`
-      msg += `Alias: ${storeConfig.payment.alias}`
+      msg += `Alias: ${storeConfig.payment.alias}\n`
+      msg += `(Enviar comprobante por este chat)`
     } else {
-      msg += `\n💵 *Pago:* Efectivo`
+      msg += `*Pago:* Efectivo`
     }
 
     const url = `https://wa.me/${storeConfig.whatsapp}?text=${encodeURIComponent(msg)}`
@@ -45,7 +52,12 @@ export default function CartPage() {
 
   return (
     <div className="bg-gray-50 min-h-screen pb-10">
-      <div className="bg-white">
+      <div className="px-4 py-5" style={{ background: '#B91C1C' }}>
+        <h2 className="text-white font-bold text-lg">Mi pedido</h2>
+        <p className="text-red-200 text-sm mt-0.5">Revisá y confirmá tu pedido</p>
+      </div>
+
+      <div className="bg-white mt-2">
         {items.map(item => (
           <div key={item.cartId} className="flex items-center gap-3 px-4 py-3 border-b border-gray-100">
             <div className="flex-1">
@@ -116,7 +128,6 @@ export default function CartPage() {
           className="w-full text-white rounded-xl py-4 text-sm font-medium flex items-center justify-center gap-2"
           style={{ background: '#16A34A' }}
         >
-          <span>💬</span>
           Confirmar pedido por WhatsApp
         </button>
       </div>
